@@ -25,17 +25,14 @@ class GameScene: SKScene {
         let xCoord = size.width * 0.5
         let yCoord = size.height * 0.5
         
-        hero.size.height = 50
-        hero.size.width = 50
+        hero.size.height = 50.0
+        hero.size.width = 50.0
         
         hero.position = CGPoint(x: xCoord, y: yCoord)
         
-    
+       
         
-        addChild(hero)
-        
-        
-      
+          addChild(hero)
         
         let swipeUp: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedUp))
         
@@ -60,9 +57,18 @@ class GameScene: SKScene {
         swipeLeft.direction = .left
         view.addGestureRecognizer(swipeLeft)
         
+        //creates a random float between 0.0 and 1.0
+    
+        
+        //repeatedly runs addMeteor function every second.
+        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(addMeteor), SKAction.wait(forDuration: 1.0)])))
+    }
+
+    func random() -> CGFloat {
+        
+        return CGFloat(Float(arc4random()) / Float(UINT32_MAX))
         
     }
-        
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
@@ -108,7 +114,15 @@ class GameScene: SKScene {
         
         var actionMove: SKAction
         
-        actionMove = SKAction.move(to: CGPoint(x: hero.position.x , y: hero.position.y + heroSpeed), duration: 0.5);
+        if (hero.position.y + heroSpeed >= size.height){
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x, y: hero.position.y + heroSpeed), duration: 0.5)
+        }
+        else {
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x, y: hero.position.y + heroSpeed), duration: 0.5)
+        }
+        
         
         hero.run(actionMove);
         print("Up")
@@ -117,7 +131,16 @@ class GameScene: SKScene {
     func swipedDown(sender:UISwipeGestureRecognizer){
         
         var actionMove: SKAction
-        actionMove = SKAction.move(to: CGPoint(x: hero.position.x , y: hero.position.y - heroSpeed), duration: 0.5);
+        
+        if (hero.position.y - heroSpeed <= 0){
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x, y: hero.size.height/2), duration: 0.5)
+        }
+        else {
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x, y: hero.position.y - heroSpeed), duration: 0.5)
+        }
+        
         
         hero.run(actionMove);
         print("Down")
@@ -126,7 +149,16 @@ class GameScene: SKScene {
     func swipedRight(sender:UISwipeGestureRecognizer){
         
         var actionMove: SKAction
-        actionMove = SKAction.move(to: CGPoint(x: hero.position.x + heroSpeed , y: hero.position.y ), duration: 0.5);
+        
+        if (hero.position.x + heroSpeed >= size.width){
+            
+            actionMove = SKAction.move(to: CGPoint(x: size.width - hero.size.width/2, y: hero.position.y), duration: 0.5)
+        }
+        else {
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x + heroSpeed, y: hero.position.y), duration: 0.5)
+        }
+        
         
         hero.run(actionMove);
         print("Right")
@@ -135,9 +167,46 @@ class GameScene: SKScene {
     func swipedLeft(sender:UISwipeGestureRecognizer){
         
         var actionMove: SKAction
-        actionMove = SKAction.move(to: CGPoint(x: hero.position.x - heroSpeed , y: hero.position.y), duration: 0.5);
+        
+        if (hero.position.x - heroSpeed <= 0){
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.size.width/2, y: hero.position.y), duration: 0.5)
+        }
+        else {
+            
+            actionMove = SKAction.move(to: CGPoint(x: hero.position.x - heroSpeed, y: hero.position.y), duration: 0.5)
+        }
+        
         
         hero.run(actionMove);
         print("Left")
     }
-}
+    
+    func addMeteor() {
+    
+        var meteor: Enemy
+        
+        meteor = Enemy(imageNamed: "MeteorLeft")
+        
+        meteor.size.height = 35.0
+        
+        meteor.size.width = 50.0
+        
+        let randomY = random() * (size.height - meteor.size.height)  + meteor.size.height/2;
+        
+        meteor.position = CGPoint(x: size.width + meteor.size.width/2, y: randomY)
+        
+        addChild(meteor)
+        
+        var moveMeteor: SKAction
+        
+        moveMeteor = SKAction.move(to: CGPoint(x: -meteor.size.width/2, y: randomY), duration: (5.0))
+        
+        meteor.run(SKAction.sequence([moveMeteor, SKAction.removeFromParent()]))
+        
+    }
+    }
+
+
+
+
