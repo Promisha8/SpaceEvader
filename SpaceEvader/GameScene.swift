@@ -28,9 +28,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Declare the new variables
     
     var meteorScore = 0
-    
     var scoreLabel = SKLabelNode(fontNamed: "Arial")
     
+    
+    var level = 1
+    
+    var levelLabel = SKLabelNode(fontNamed: "Arial")
+    
+    var levelLimit = 5
+    
+    var levelIncrease = 5
+    
+    var enemies : [Enemy] = []
+    var enemyHealth = 1
     
     override func didMove(to view: SKView) {
         
@@ -55,7 +65,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         addChild(scoreLabel)
         
+        levelLabel.fontColor = UIColor.yellow
+        
+        levelLabel.fontSize = 20
+        
+        levelLabel.position = CGPoint(x: self.size.width * 0.8, y: self.size.height * 0.9)
+        
+        addChild(levelLabel)
+        
+        levelLabel.text = "Level: 1"
+        
         scoreLabel.text = "0"
+        
+        
+        
         
         // Hero
         
@@ -99,8 +122,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         //repeatedly runs addMeteor function every second.
-        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(addMeteor), SKAction.wait(forDuration: 1.0)])))
-    
+        
+        addEnemies()
 
     
     }
@@ -264,6 +287,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         addChild(meteor)
         
+        enemies.append(meteor)
+        
+        
         var moveMeteor: SKAction
         
         moveMeteor = SKAction.move(to: CGPoint(x: -meteor.size.width/2, y: randomY), duration: (5.0))
@@ -421,6 +447,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         explodeMeteor(meteor: meteor)
         
+        checkLevelIncrease()
+        
+      
+        if let meteorIndex = enemies.index(of: meteor) {
+            
+            enemies.remove(at: meteorIndex)
+        }
+        
 }
 
     func heroHitMeteor(player: SKSpriteNode, meteor: Enemy) {
@@ -467,6 +501,50 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    
+    func addEnemies() {
+        
+        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(addMeteor), SKAction.wait(forDuration: 1.0)])), withKey:"addEnemies")
+    }
+    
+    func stopEnemies() {
+        
+        for enemy in enemies {
+            enemy.removeFromParent()
+        }
+        
+        removeAction(forKey: "addEnemies")
+    }
+    
+    
+    func increaseLevel(){
+        
+        levelLimit = levelLimit + levelIncrease
+        
+        level += 1
+        
+        levelLabel.text = "Level: \(level)"
+    }
+    
+    
+    
+    func checkLevelIncrease(){
+    
+        if meteorScore > levelLimit {
+    
+            for enemy in enemies {
+                
+                enemy.removeFromParent()
+            }
+            
+            enemies = [Enemy] ()
+            
+            let runEnemies = SKAction.sequence([SKAction.run(stopEnemies), SKAction.wait(forDuration: 10.0), SKAction.run(increaseLevel), SKAction.run(addEnemies)])
+            
+            run(runEnemies)
+    }
+    
+    }
 }
 
 
